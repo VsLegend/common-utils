@@ -1,6 +1,5 @@
 package com.utils.exception;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.ObjectUtils;
 
 /**
@@ -9,7 +8,6 @@ import org.springframework.util.ObjectUtils;
  * @Description 业务异常
  */
 
-@Slf4j
 public class BusinessException extends RuntimeException {
 
     private static final long serialVersionUID = 8449738842423044010L;

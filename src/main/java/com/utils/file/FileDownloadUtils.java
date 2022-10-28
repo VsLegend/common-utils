@@ -2,7 +2,6 @@ package com.utils.file;
 
 import com.utils.exception.BusinessException;
 import com.utils.exception.Status;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 
 import javax.servlet.ServletOutputStream;
@@ -15,7 +14,6 @@ import java.net.URLEncoder;
  * @Date 2022/8/12 13:57
  * @Description 文件下载
  */
-@Slf4j
 public class FileDownloadUtils {
 
     /**

@@ -6,7 +6,6 @@ package com.utils.thread;
  * @Description
  */
 
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
 import java.util.List;
@@ -19,7 +18,6 @@ import java.util.stream.Collectors;
 /**
  * CompletableFuture封装工具类
  */
-@Slf4j
 public class FutureUtils {
 //    /**
 //     * 该方法为美团内部rpc注册监听的封装，可以作为其他实现的参照
