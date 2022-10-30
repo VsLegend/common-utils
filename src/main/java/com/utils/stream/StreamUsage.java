@@ -16,6 +16,11 @@ public class StreamUsage {
     public static void main(String[] args) {
         List<Student> students = Student.getStudent();
 
+        Integer reduce2 = students.stream().reduce(0, (integer, student) -> integer + student.getScore(), Integer::sum);
+        Integer reduce3 = students.stream().reduce(10, (integer, student) -> integer + student.getScore(), Integer::sum);
+        System.out.println(reduce2);
+        System.out.println(reduce3);
+
         // 检视元素
         List<String> peek = students.stream()
                 .filter(s -> s.getScore() > 60)

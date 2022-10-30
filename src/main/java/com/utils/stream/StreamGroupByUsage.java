@@ -17,7 +17,7 @@ public class StreamGroupByUsage {
         List<Student> students = Student.getStudent();
         // 将不同课程的学生进行分类
         Map<String, List<Student>> groupByCourse = students.stream().collect(Collectors.groupingBy(Student::getCourse));
-        Map<String, List<Student>> groupByCourse1 = students.stream().collect(Collectors.groupingBy(Student::getCourse, Collectors.toMap()));
+        Map<String, List<Student>> groupByCourse1 = students.stream().collect(Collectors.groupingBy(Student::getCourse, Collectors.toList()));
         // 上面的方法中，最终返回默认是HashMap，键值对中的值默认是ArrayList，可以通过下面的方法自定义返回结果、值的类型
         Map<String, List<Student>> groupByCourse2 = students.stream()
                 .collect(Collectors.groupingBy(Student::getCourse, HashMap::new, Collectors.toList()));
@@ -75,6 +75,8 @@ public class StreamGroupByUsage {
                 .collect(Collectors.groupingBy(Student::getCourse,
                         Collectors.collectingAndThen(Collectors.mapping(Student::getName, Collectors.joining("，")), s -> "学生名单：" + s)));
         System.out.println(groupMapperThenLink);
+
+
 
     }
 
