@@ -1,5 +1,6 @@
 package com.utils.list;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -19,7 +20,7 @@ public class ListUtil {
      * @param <T>  列表类型
      * @return
      */
-    public static <T> List<List<T>> segmentList(List<T> list, int maxNum) {
+    public static <T> Collection<Collection<T>> segmentList(Collection<T> list, int maxNum) {
         // 最大分组数量
         int maxSize = calcSegmentSize(list.size(), maxNum);
         return Stream.iterate(0, n -> n + 1)
