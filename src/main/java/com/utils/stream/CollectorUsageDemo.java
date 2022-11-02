@@ -47,9 +47,7 @@ public class CollectorUsageDemo {
         List<CompletableFuture<R>> completableFutureList = new ArrayList<>(segmentList.size());
         for (Collection<T> collection : segmentList) {
             // 并发情况下就不能保证累积函数执行的顺序，也就无法保证最终结果的顺序性（ForEachOrderedTask | ForEachTask）
-            CompletableFuture<R> async = CompletableFuture.supplyAsync(() -> {
-                return CollectorUsageDemo.dealWithElement(collection, collector);
-            });
+            CompletableFuture<R> async = CompletableFuture.supplyAsync(() -> CollectorUsageDemo.dealWithElement(collection, collector));
             completableFutureList.add(async);
         }
         CompletableFuture<Void> allOf = CompletableFuture.allOf(completableFutureList.toArray(new CompletableFuture[0]));
