@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,6 +41,10 @@ public class Student {
     public static Student sum(Student student1, Student student2) {
         student1.setScore(student1.getScore() + student2.getScore());
         return student1;
+    }
+
+    public Integer totalAge() {
+        return age;
     }
 
     public static List<Student> getStudent() {

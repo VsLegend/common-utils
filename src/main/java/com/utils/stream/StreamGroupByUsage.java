@@ -63,7 +63,7 @@ public class StreamGroupByUsage {
                 .filter(s -> s.getScore() > 60)
                 .collect(Collectors.groupingBy(Student::getCourse, Collectors.mapping(s -> BeanUtil.copyProperties(s, OutstandingStudent.class), Collectors.toList())));
         // 增加规约函数，计算每科的最高分学生的信息
-        Map<String, Optional<Student>> groupCourseMax = students.stream()
+        Map<String, Optional<Student>> groupCourseMax = students.stream().parallel()
                 .collect(Collectors.groupingBy(Student::getCourse, Collectors.reducing(BinaryOperator.maxBy(Comparator.comparing(Student::getScore)))));
         // 增加规约函数，计算每科总分
         Map<String, Integer> groupCalcSum = students.stream()

@@ -14,28 +14,51 @@ import java.util.stream.Collector;
  *
  */
 public class SimpleCollector<T, A, R> implements Collector<T, A, R> {
+
+    private final Supplier<A> supplier;
+
+    private final BiConsumer<A, T> accumulator;
+
+    private final BinaryOperator<A> combiner;
+
+    private final Function<A, R> finisher;
+
+    private final Set<Characteristics> characteristics;
+
+    public SimpleCollector(Supplier<A> supplier,
+                           BiConsumer<A, T> accumulator,
+                           BinaryOperator<A> combiner,
+                           Function<A, R> finisher,
+                           Set<Characteristics> characteristics) {
+        this.supplier = supplier;
+        this.accumulator = accumulator;
+        this.combiner = combiner;
+        this.finisher = finisher;
+        this.characteristics = characteristics;
+    }
+
     @Override
     public Supplier<A> supplier() {
-        return null;
+        return supplier;
     }
 
     @Override
     public BiConsumer<A, T> accumulator() {
-        return null;
+        return accumulator;
     }
 
     @Override
     public BinaryOperator<A> combiner() {
-        return null;
+        return combiner;
     }
 
     @Override
     public Function<A, R> finisher() {
-        return null;
+        return finisher;
     }
 
     @Override
     public Set<Characteristics> characteristics() {
-        return null;
+        return characteristics;
     }
 }

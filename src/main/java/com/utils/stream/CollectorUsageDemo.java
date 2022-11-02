@@ -2,13 +2,11 @@ package com.utils.stream;
 
 import com.utils.list.ListUtil;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.LockSupport;
 import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 /**
  * @Author Wang Junwei
@@ -18,7 +16,23 @@ import java.util.stream.Collectors;
 public class CollectorUsageDemo {
 
 
-    public <R, T, A> A execute(ExecutorService threadPool, Collection<T> data, Collector<T, R, A> collector) throws ExecutionException, InterruptedException {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
+        ExecutorService executorService = Executors.newFixedThreadPool(5);
+        List<Student> student = Student.getStudent();
+        // Collectors.joining()
+        Set<Collector.Characteristics> characteristics = Collections.unmodifiableSet(EnumSet.of(Collector.Characteristics.CONCURRENT,
+                Collector.Characteristics.UNORDERED));
+        Collector<Student, AtomicInteger, Integer> collector = new SimpleCollector<>(AtomicInteger::new, (AtomicInteger i, Student s) -> i.addAndGet(s.getAge()),
+                (i, i1) -> {
+                    i.addAndGet(i1.get());
+                    return i;
+                }, AtomicInteger::get, characteristics);
+        Integer execute = execute(executorService, student, collector);
+        System.out.println(execute);
+
+    }
+
+    public static <T, R, A> A execute(ExecutorService threadPool, Collection<T> data, Collector<T, R, A> collector) throws ExecutionException, InterruptedException {
         // 查询特征，判断是否要进行分段处理
         Set<Collector.Characteristics> characteristics = collector.characteristics();
         int segment = 1;
@@ -27,24 +41,37 @@ public class CollectorUsageDemo {
         }
         // 集合分段用于多线程，以便不会对统一数据多次计算
         Collection<Collection<T>> segmentList = ListUtil.segmentList(data, segment);
-        // 初始化容器
-        R r = collector.supplier().get();
-        CompletableFuture<R> completableFuture = CompletableFuture.completedFuture(r);
+        List<CompletableFuture<R>> completableFutureList = new ArrayList<>(segmentList.size());
         for (Collection<T> collection : segmentList) {
-            completableFuture.thenApplyAsync(r1 -> {
+            // 并发情况下就不能保证累积函数执行的顺序，也就无法保证最终结果的顺序性（ForEachOrderedTask | ForEachTask）
+            // 此时如果容器类型不能保证并发安全的话，结果会不准确
+            CompletableFuture<R> async = CompletableFuture.supplyAsync(() -> {
                 // 起初初始容器也将作为函数计算的一部分, 这里将容器合并，并返回新的容器
-                R r2 = this.dealWithElement(collection, collector);
-                return collector.combiner().apply(r1, r2);
+                return CollectorUsageDemo.dealWithElement(collection, collector);
             });
+            completableFutureList.add(async);
         }
+        CompletableFuture<Void> allOf = CompletableFuture.allOf(completableFutureList.toArray(new CompletableFuture[0]));
+        CompletableFuture<R> result = allOf.thenApply(v -> {
+            // 初始化容器
+            R r = collector.supplier().get();
+            for (CompletableFuture<R> f1 : completableFutureList) {
+                R r2 = f1.join();
+                r = collector.combiner().apply(r, r2);
+            }
+            return r;
+        });
         // 合并容器后的最终结果
-        R last = completableFuture.get();
+        R last = result.get();
+        if (characteristics.contains(Collector.Characteristics.IDENTITY_FINISH)) {
+            return (A) last;
+        }
         // 将R转为最终的结果类型A
         return collector.finisher().apply(last);
     }
 
 
-    public <R, T, A> R dealWithElement(Collection<T> data, Collector<T, R, A> collector) {
+    public static <T, R, A> R dealWithElement(Collection<T> data, Collector<T, R, A> collector) {
         // 初始化一个容器
         R container = collector.supplier().get();
         // 遍历data集合，将每个元素通过accumulator函数进行规约
