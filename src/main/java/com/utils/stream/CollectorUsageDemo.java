@@ -33,27 +33,28 @@ public class CollectorUsageDemo {
     }
 
     public static <T, R, A> A execute(ExecutorService threadPool, Collection<T> data, Collector<T, R, A> collector) throws ExecutionException, InterruptedException {
+        Objects.requireNonNull(threadPool, "threadPool");
+        Objects.requireNonNull(data, "data");
+        Objects.requireNonNull(collector, "collector");
         // 查询特征，判断是否要进行分段处理
         Set<Collector.Characteristics> characteristics = collector.characteristics();
         int segment = 1;
         if (characteristics.contains(Collector.Characteristics.CONCURRENT)) {
             segment = data.size() / Runtime.getRuntime().availableProcessors() + 1;
         }
-        // 集合分段用于多线程，以便不会对统一数据多次计算
+        // 集合分段用于多线程，以便不会对同一数据多次计算
         Collection<Collection<T>> segmentList = ListUtil.segmentList(data, segment);
         List<CompletableFuture<R>> completableFutureList = new ArrayList<>(segmentList.size());
         for (Collection<T> collection : segmentList) {
             // 并发情况下就不能保证累积函数执行的顺序，也就无法保证最终结果的顺序性（ForEachOrderedTask | ForEachTask）
-            // 此时如果容器类型不能保证并发安全的话，结果会不准确
             CompletableFuture<R> async = CompletableFuture.supplyAsync(() -> {
-                // 起初初始容器也将作为函数计算的一部分, 这里将容器合并，并返回新的容器
                 return CollectorUsageDemo.dealWithElement(collection, collector);
             });
             completableFutureList.add(async);
         }
         CompletableFuture<Void> allOf = CompletableFuture.allOf(completableFutureList.toArray(new CompletableFuture[0]));
         CompletableFuture<R> result = allOf.thenApply(v -> {
-            // 初始化容器
+            // 初始化容器 起初初始容器也将作为函数计算的一部分, 这里将容器合并，并返回新的容器
             R r = collector.supplier().get();
             for (CompletableFuture<R> f1 : completableFutureList) {
                 R r2 = f1.join();
