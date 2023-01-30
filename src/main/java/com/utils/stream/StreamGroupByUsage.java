@@ -15,6 +15,26 @@ public class StreamGroupByUsage {
 
     public static void main(String[] args) {
         List<Student> students = Student.getStudent();
+        // 自定义键
+        // 字段映射
+        Map<String, List<Student>> filedKey = students.stream().collect(Collectors.groupingBy(Student::getCourse));
+        // 组合字段
+        Map<String, List<Student>> combineFiledKey = students.stream().collect(Collectors.groupingBy(student -> student.getClazz() + "#" + student.getCourse()));
+
+        // 自定义键的生成规则
+        // 根据两级范围
+        Map<Boolean, List<Student>> customRangeKey = students.stream().collect(Collectors.groupingBy(student -> student.getScore() > 60));
+        // 根据多级范围
+        Map<String, List<Student>> customMultiRangeKey = students.stream().collect(Collectors.groupingBy(student -> {
+            if (student.getScore() < 60) {
+                return "C";
+            } else if (student.getScore() < 80) {
+                return "B";
+            }
+            return "A";
+        }));
+
+
         // 将不同课程的学生进行分类
         Map<String, List<Student>> groupByCourse = students.stream().collect(Collectors.groupingBy(Student::getCourse));
         Map<String, List<Student>> groupByCourse1 = students.stream().collect(Collectors.groupingBy(Student::getCourse, Collectors.toList()));
