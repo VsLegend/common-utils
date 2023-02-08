@@ -19,6 +19,11 @@ public enum Status {
     SERVICE_ERROR(9, "服务器运行错误，请联系管理员处理"),
 
 
+    DATA_NOT_EXIST(99, "查询数据不存在"),
+
+
+
+
     /**
      * 文件处理异常
      */
