@@ -1,4 +1,4 @@
-package com.utils;
+package com.utils.time;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -7,6 +7,7 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
 import java.util.Date;
 import java.util.Objects;
+import java.util.TimeZone;
 
 /**
  * @Author Wang Junwei
@@ -17,24 +18,32 @@ public class Date8Utils {
 
     /**
      * Date转LocalDateTime
+     *
      * @param date
      * @return
      */
     public static LocalDateTime toLocalDateTime(Date date) {
-        return toLocalDateTime(date, ZoneId.of("+8"));
+        // ZoneId ctt = TimeZone.getTimeZone("CTT").toZoneId();
+        return toLocalDateTime(date, ZoneId.of(TimeConstants.TIME_ZONE));
     }
 
+    /**
+     * 通过Instant直接转
+     *
+     * @param date
+     * @param zoneId
+     * @return
+     */
     public static LocalDateTime toLocalDateTime(Date date, ZoneId zoneId) {
         Objects.requireNonNull(date, "date");
         Objects.requireNonNull(date, "zoneId");
         Instant instant = date.toInstant();
         return instant.atZone(zoneId).toLocalDateTime();
-//        TimeZone.getTimeZone("CTT").toZoneId();
-//        return LocalDateTime.ofInstant(instant, zoneId);
     }
 
     /**
      * 计算时间和当前时间的间隔
+     *
      * @param localDateTime
      * @return
      */
