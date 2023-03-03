@@ -37,6 +37,7 @@ public class TimeUsage {
         OffsetDateTime.ofInstant(instant, ZoneId.of("+5"));
 
         LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+        LocalDateTime.now();
         System.out.println("UTC时区当前时间：" + instant);
         System.out.println("指定时区的时间：" + zonedDateTime);
         System.out.println("指定偏移量的时间：" + offsetDateTime);
@@ -59,12 +60,6 @@ public class TimeUsage {
 
 
     }
-
-    public static void main(String[] args) {
-        timeZone();
-    }
-
-
 
     /**
      * 时区
@@ -123,6 +118,10 @@ public class TimeUsage {
     }
 
 
+    public static void main(String[] args) {
+        offset();
+    }
+
     /**
      * 时区偏移量
      */
@@ -131,14 +130,20 @@ public class TimeUsage {
         // 时区偏移量：
         // 时区偏移量，相对于世界标准时来说，每相隔一个时区即相差一小时，往东经一个区，时间快1h，偏移量+1，往西经-1，自然有了偏移了小时数，也有分秒。支持的偏移量范围（+18:00 to -18:00）
         // 因此东八区可以由上面的几种世界标准时表示为：UTC+8（+8）、GMT+8、UT+8，其表达的含义大致相当，区别在于每种方式表示的时间精度不同。
-        ZoneId offsetZoneUtc = ZoneId.of("UTC+8");
-        ZoneOffset zoneOffset = ZoneOffset.of("+02:30");
         int i = (2 * 60 + 30) * 60 * 1000;
-        ZoneId offsetZone = ZoneId.ofOffset("UTC", zoneOffset);
-        ZoneOffset zoneOffsetNum = ZoneOffset.ofHours(5);
-        ZoneId offsetZoneNum = ZoneId.ofOffset("GMT", zoneOffsetNum);
-        LocalDateTime now1 = LocalDateTime.now(offsetZoneUtc);
-        LocalDateTime now2 = LocalDateTime.now(offsetZoneNum);
+        // 1.
+        ZoneId offsetZoneUtc = ZoneId.of("Asia/Shanghai");
+        // 2.
+        ZoneOffset zoneOffset = ZoneOffset.of("+02:30");
+        // 3.
+        ZoneOffset zoneOffsetNum = ZoneOffset.ofHoursMinutes(5, 35);
+        ZoneId offsetZoneNum = ZoneId.ofOffset("UTC", zoneOffsetNum);
+
+        Instant instant = Instant.now();
+        System.out.println("时区：" + instant.atZone(offsetZoneUtc));
+        System.out.println("偏移量：" + instant.atOffset(zoneOffset));
+        System.out.println("偏移量生成的时区：" + instant.atZone(offsetZoneNum));
+
 
         TimeZone timeZoneZ = TimeZone.getTimeZone("GMT+8");
         TimeZone timeZone8 = TimeZone.getTimeZone("UTC+8");
