@@ -9,6 +9,7 @@ import java.time.temporal.TemporalUnit;
 import java.time.zone.ZoneRules;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
 
 /**
  * @Author Wang Junwei
@@ -117,11 +118,6 @@ public class TimeUsage {
 //        TimeZone timeZoneCtt = TimeZone.getTimeZone("CTT");
     }
 
-
-    public static void main(String[] args) {
-        offset();
-    }
-
     /**
      * 时区偏移量
      */
@@ -144,16 +140,6 @@ public class TimeUsage {
         System.out.println("偏移量：" + instant.atOffset(zoneOffset));
         System.out.println("偏移量生成的时区：" + instant.atZone(offsetZoneNum));
 
-
-        TimeZone timeZoneZ = TimeZone.getTimeZone("GMT+8");
-        TimeZone timeZone8 = TimeZone.getTimeZone("UTC+8");
-        TimeZone timeZoneNum = TimeZone.getTimeZone("+8");
-        Calendar instanceZ8 = Calendar.getInstance(timeZoneZ);
-        Calendar instance8 = Calendar.getInstance(timeZone8);
-
-
-        Date time1 = instanceZ8.getTime();
-        Date time2 = instance8.getTime();
     }
 
     /**
@@ -162,9 +148,40 @@ public class TimeUsage {
     private static void timeUnit() {
         // 时间单位 TimeUnit/1.8前 ChronoUnit/1.8
         ChronoUnit years = ChronoUnit.YEARS;
+        Duration duration = years.getDuration();
         // 代表某个时间单位的持续时间
         Duration days = Duration.ofDays(1);
     }
+
+    /**
+     * 时钟类（动态时间）
+     */
+    private static void clock() {
+        Clock defaultClock = Clock.systemDefaultZone();
+        System.out.println(defaultClock.instant());
+        LockSupport.parkNanos(1);
+        System.out.println(defaultClock.instant());
+        LockSupport.parkNanos(1);
+        System.out.println(defaultClock.instant());
+    }
+
+    /**
+     * Instant（时间实例，静态时间）
+     */
+    private static void instant() {
+        long timeMillis = System.currentTimeMillis();
+        Instant instant = Instant.now();
+        Instant ofEpochMilli = Instant.ofEpochMilli(timeMillis);
+        Clock clock = Clock.systemUTC(); // System.currentTimeMillis()
+        Instant clockInstant = Instant.now(clock);
+    }
+
+
+    public static void main(String[] args) {
+        clock();
+    }
+
+
 
     public static void calc() {
         // 生成时间 以及对比时区不同所产生的时间差距
