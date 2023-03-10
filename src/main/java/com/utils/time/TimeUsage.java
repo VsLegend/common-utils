@@ -4,6 +4,7 @@ import sun.util.calendar.ZoneInfoFile;
 
 import java.text.SimpleDateFormat;
 import java.time.*;
+import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
 import java.time.zone.ZoneRules;
@@ -146,23 +147,54 @@ public class TimeUsage {
      * 时间单位
      */
     private static void timeUnit() {
+        Instant instant = Instant.now();
         // 时间单位 TimeUnit/1.8前 ChronoUnit/1.8
-        ChronoUnit years = ChronoUnit.YEARS;
-        Duration duration = years.getDuration();
-        // 代表某个时间单位的持续时间
+        ChronoUnit hours = ChronoUnit.HOURS;
+        ZonedDateTime zonedDateTime = instant.atZone(ZoneId.of("-8"));
+        System.out.println(hours.between(zonedDateTime, instant.atZone(ZoneId.of("+8"))));
+
+        // 代表某个时间的具体长度
         Duration days = Duration.ofDays(1);
+        Duration duration = hours.getDuration();
+        System.out.println(days.toString());
+        System.out.println(duration.toString());
+
+        // 时间段
+        ChronoField hourOfDay = ChronoField.HOUR_OF_DAY;
+        LocalDateTime now = LocalDateTime.now();
+    }
+
+    public static void main(String[] args) {
+        timeUnit();
     }
 
     /**
      * 时钟类（动态时间）
      */
     private static void clock() {
+        // 本地系统时钟 SystemClock
         Clock defaultClock = Clock.systemDefaultZone();
-        System.out.println(defaultClock.instant());
+        print(defaultClock);
+
+        // 静态时钟 FixedClock
+        Clock fixedClock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
+        print(fixedClock);
+
+        // 偏移量时钟 OffsetClock
+        Clock offset = Clock.offset(defaultClock, Duration.ofDays(1));
+        print(offset);
+
+        // 闹钟（循环） TickClock
+        Clock tick = Clock.tick(defaultClock, Duration.ofSeconds(1));
+        print(tick);
+    }
+
+    private static void print(Clock clock) {
+        System.out.println(clock.toString());
         LockSupport.parkNanos(1);
-        System.out.println(defaultClock.instant());
+        System.out.println(clock.instant());
         LockSupport.parkNanos(1);
-        System.out.println(defaultClock.instant());
+        System.out.println(clock.instant());
     }
 
     /**
@@ -176,10 +208,6 @@ public class TimeUsage {
         Instant clockInstant = Instant.now(clock);
     }
 
-
-    public static void main(String[] args) {
-        clock();
-    }
 
 
 
