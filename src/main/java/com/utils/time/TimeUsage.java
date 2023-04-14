@@ -1,5 +1,7 @@
 package com.utils.time;
 
+import org.springframework.cglib.core.Local;
+import sun.util.calendar.ZoneInfo;
 import sun.util.calendar.ZoneInfoFile;
 
 import java.text.SimpleDateFormat;
@@ -45,6 +47,7 @@ public class TimeUsage {
         System.out.println("指定偏移量的时间：" + offsetDateTime);
         System.out.println("程序执行的本地地区时间：" + localDateTime);
     }
+
     /**
      * 地区时
      */
@@ -75,11 +78,12 @@ public class TimeUsage {
         ZoneId zoneGmt = ZoneId.of("GMT");
         ZoneId zoneUt = ZoneId.of("UT");
         ZoneId ctt = ZoneId.of("Asia/Shanghai");
-//        System.out.println(ZonedDateTime.now(zone));
-//        System.out.println(ZonedDateTime.now(zoneUtc));
-//        System.out.println(ZonedDateTime.now(zoneGmt));
-//        System.out.println(ZonedDateTime.now(zoneUt));
-//        System.out.println(ZonedDateTime.now(ctt));
+        String[] availableIDs = ZoneInfo.getAvailableIDs(8 * 60 * 60 * 1000);
+        System.out.println(ZonedDateTime.now(zone));
+        System.out.println(ZonedDateTime.now(zoneUtc));
+        System.out.println(ZonedDateTime.now(zoneGmt));
+        System.out.println(ZonedDateTime.now(zoneUt));
+        System.out.println(ZonedDateTime.now(ctt));
 
         // ZoneId可用的时区ID
         Set<String> availableZoneIds = ZoneId.getAvailableZoneIds();
@@ -90,18 +94,20 @@ public class TimeUsage {
         // 注意：ZoneId的简称已经在TimeZone中废弃.因此在TimeZone使用一些简称时，转ZoneId可能会出现时区错乱
 
 
-
         // TimeZone
         // 也可以通过地区时的简称来获取时区ID，上海时间（"CTT", "Asia/Shanghai"）
 //        ZoneId ctt = ZoneId.of("CTT", ZoneId.SHORT_IDS);
-        TimeZone timeZoneUtc = TimeZone.getTimeZone("UTC");
-        TimeZone timeZoneCtt = TimeZone.getTimeZone("Asia/Shanghai");
         Date date = new Date();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        dateFormat.setTimeZone(timeZoneUtc);
-        System.out.println(dateFormat.format(date));
-        dateFormat.setTimeZone(timeZoneCtt);
-        System.out.println(dateFormat.format(date));
+        TimeZone utc = TimeZone.getTimeZone("UTC+8");
+        TimeZone gmt = TimeZone.getTimeZone("GMT+8");
+        TimeZone ut = TimeZone.getTimeZone("UT+8");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        sdf.setTimeZone(utc);
+        System.out.println(sdf.format(date));
+        sdf.setTimeZone(gmt);
+        System.out.println(sdf.format(date));
+        sdf.setTimeZone(ut);
+        System.out.println(sdf.format(date));
 
 
         String[] offsetTimeZones = TimeZone.getAvailableIDs(8 * 60 * 60 * 1000);
@@ -127,46 +133,59 @@ public class TimeUsage {
         // 时区偏移量：
         // 时区偏移量，相对于世界标准时来说，每相隔一个时区即相差一小时，往东经一个区，时间快1h，偏移量+1，往西经-1，自然有了偏移了小时数，也有分秒。支持的偏移量范围（+18:00 to -18:00）
         // 因此东八区可以由上面的几种世界标准时表示为：UTC+8（+8）、GMT+8、UT+8，其表达的含义大致相当，区别在于每种方式表示的时间精度不同。
-        int i = (2 * 60 + 30) * 60 * 1000;
+        Instant instant = Instant.now();
         // 1.
         ZoneId offsetZoneUtc = ZoneId.of("Asia/Shanghai");
+        ZoneId offsetZoneNum = ZoneId.ofOffset("UTC", ZoneOffset.ofHours(1)); // 仅支持GMT、UTC、UT三种前缀
+        System.out.println("时区的偏移量计算：" + instant.atZone(offsetZoneUtc));
+        System.out.println("指定时区偏移量计算：" + instant.atZone(offsetZoneNum));
+
         // 2.
-        ZoneOffset zoneOffset = ZoneOffset.of("+02:30");
-        // 3.
-        ZoneOffset zoneOffsetNum = ZoneOffset.ofHoursMinutes(5, 35);
-        ZoneId offsetZoneNum = ZoneId.ofOffset("UTC", zoneOffsetNum);
+        // 比如我们当前时区为东八区，要计算本地时间+2:30偏移量的当地时间
+        ZoneId zoneId = ZoneId.of("Asia/Shanghai");
+        ZoneOffset zoneOffset = ZoneOffset.of("+02:30"); // ZoneOffset.ofHoursMinutes(2, 30);
+        System.out.println("世界时时间：" + instant);
+        System.out.println("当前地区时间：" + instant.atZone(zoneId).toLocalDateTime());
+        System.out.println("偏移量的本地时间计算：" + instant.atOffset(zoneOffset).toLocalDateTime());
 
+    }
+
+
+
+    private static void chrUnit() {
+        // 时间单位 TimeUnit/1.8前 ChronoUnit/1.8
         Instant instant = Instant.now();
-        System.out.println("时区：" + instant.atZone(offsetZoneUtc));
-        System.out.println("偏移量：" + instant.atOffset(zoneOffset));
-        System.out.println("偏移量生成的时区：" + instant.atZone(offsetZoneNum));
+        ChronoUnit hours = ChronoUnit.HOURS;
+        instant.atZone(ZoneId.of("+8"));
+        System.out.println("不同时间类的相差时间：" + hours.between(instant.atOffset(ZoneOffset.ofHours(-5)), instant.atOffset(ZoneOffset.ofHours(8))));
+        System.out.println("不同时间类的相差时间：" + hours.between(instant.atZone(ZoneId.of("-5")), instant.atZone(ZoneId.of("+8"))));
+        System.out.println("不同时间类的相差时间：" + hours.between(LocalDateTime.ofInstant(instant, ZoneId.of("-5")), LocalDateTime.ofInstant(instant, ZoneId.of("+8"))));
 
+        ChronoUnit weeks = ChronoUnit.WEEKS;
+        System.out.println("相差周数：" + weeks.between(LocalDate.parse("2023-04-07"), LocalDate.parse("2023-04-14")));
+        System.out.println("相差周数：" + weeks.between(LocalDate.parse("2023-04-08"), LocalDate.parse("2023-04-14")));
     }
 
     /**
      * 时间单位
      */
-    private static void timeUnit() {
-        Instant instant = Instant.now();
-        // 时间单位 TimeUnit/1.8前 ChronoUnit/1.8
-        ChronoUnit hours = ChronoUnit.HOURS;
-        ZonedDateTime zonedDateTime = instant.atZone(ZoneId.of("-8"));
-        System.out.println(hours.between(zonedDateTime, instant.atZone(ZoneId.of("+8"))));
-
+    private static void duration() {
         // 代表某个时间的具体长度
+        Instant calcInstant = Instant.now();
         Duration days = Duration.ofDays(1);
-        Duration duration = hours.getDuration();
+        System.out.printf("时间加减：%s，增加后：%s，减少后：%s \n", calcInstant, days.addTo(calcInstant), days.subtractFrom(calcInstant));
+        System.out.printf("时间长度：%s，增加后：%s，倍数计算：%s \n", days, days.plus(Duration.ofHours(6)), days.multipliedBy(10));
+
+        Duration duration = ChronoUnit.HOURS.getDuration();
         System.out.println(days.toString());
         System.out.println(duration.toString());
+        System.out.println(days.get(ChronoUnit.SECONDS));
 
         // 时间段
         ChronoField hourOfDay = ChronoField.HOUR_OF_DAY;
         LocalDateTime now = LocalDateTime.now();
     }
 
-    public static void main(String[] args) {
-        timeUnit();
-    }
 
     /**
      * 时钟类（动态时间）
@@ -184,7 +203,7 @@ public class TimeUsage {
         Clock offset = Clock.offset(defaultClock, Duration.ofDays(1));
         print(offset);
 
-        // 闹钟（循环） TickClock
+        // 闹钟，根据当前时间计算Duration后的未来时钟 TickClock
         Clock tick = Clock.tick(defaultClock, Duration.ofSeconds(1));
         print(tick);
     }
@@ -197,6 +216,10 @@ public class TimeUsage {
         System.out.println(clock.instant());
     }
 
+    public static void main(String[] args) {
+        instant();
+    }
+
     /**
      * Instant（时间实例，静态时间）
      */
@@ -204,11 +227,29 @@ public class TimeUsage {
         long timeMillis = System.currentTimeMillis();
         Instant instant = Instant.now();
         Instant ofEpochMilli = Instant.ofEpochMilli(timeMillis);
-        Clock clock = Clock.systemUTC(); // System.currentTimeMillis()
-        Instant clockInstant = Instant.now(clock);
+        Instant parse = Instant.parse("2023-04-14T08:22:28.987Z");
+
+        // 时间转换操作
+        ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(instant, ZoneId.of("America/New_York"));
+        OffsetDateTime offsetDateTime = OffsetDateTime.ofInstant(instant, ZoneId.of("+5"));
+        LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+
+        // 时间加减操作
+        Instant minus = instant.minus(1, ChronoUnit.DAYS);
+        instant.minus(Duration.ofDays(18));
+        Instant plus = instant.plus(1, ChronoUnit.DAYS);
+
+        // 对比（时间是用秒和毫秒存储，谁的值小谁就越早，反之越晚）
+        boolean after = instant.isAfter(minus); // true
+        boolean before = instant.isBefore(plus); // true
+
+        // 查询是否支持某个时间单位、时间区域，不支持的话会在使用时间单位、时间区域的方法中抛出异常
+        boolean supported = instant.isSupported(ChronoUnit.FOREVER); // false
+        boolean supported1 = instant.isSupported(ChronoField.DAY_OF_MONTH); // false
+
+
+
     }
-
-
 
 
     public static void calc() {
