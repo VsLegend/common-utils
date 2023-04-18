@@ -6,9 +6,8 @@ import sun.util.calendar.ZoneInfoFile;
 
 import java.text.SimpleDateFormat;
 import java.time.*;
-import java.time.temporal.ChronoField;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
+import java.time.chrono.Chronology;
+import java.time.temporal.*;
 import java.time.zone.ZoneRules;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -71,6 +70,12 @@ public class TimeUsage {
      */
     private static void timeZone() {
         // 时区：
+        ZoneId zoneId = ZoneId.systemDefault(); // 本质是调用TimeZone.getDefault().toZoneId()
+        TimeZone timeZone = TimeZone.getDefault();
+        // 可以设置全局的默认时区
+        TimeZone.setDefault(timeZone);
+
+
         // jdk8使用ZoneId作为时区类，在此之前使用TimeZone。因此ZoneId转TimeZone时可能存在兼容性问题。
         // 时区ID，Z代表UTC，ZoneId仅支持世界标准时的表达方式
         ZoneId zone = ZoneId.of("Z");
@@ -112,8 +117,8 @@ public class TimeUsage {
 
         String[] offsetTimeZones = TimeZone.getAvailableIDs(8 * 60 * 60 * 1000);
         // 时区概念 Time Zone，通过时区ID确定一个时区。此外还可以根据getAvailableIDs获取可以表示的时区ID，包括世界标准时和各地的地区时。
-        TimeZone timeZone = TimeZone.getTimeZone(ctt);
-        ZoneId toZoneId = timeZone.toZoneId();
+        TimeZone tz = TimeZone.getTimeZone(ctt);
+        ZoneId toZoneId = tz.toZoneId();
         // TimeZone可用的时区ID
         String[] availableIds = TimeZone.getAvailableIDs();
 //        Arrays.stream(availableIds).forEach(System.out::println);
@@ -149,7 +154,6 @@ public class TimeUsage {
         System.out.println("偏移量的本地时间计算：" + instant.atOffset(zoneOffset).toLocalDateTime());
 
     }
-
 
 
     private static void chrUnit() {
@@ -216,10 +220,6 @@ public class TimeUsage {
         System.out.println(clock.instant());
     }
 
-    public static void main(String[] args) {
-        instant();
-    }
-
     /**
      * Instant（时间实例，静态时间）
      */
@@ -238,6 +238,7 @@ public class TimeUsage {
         Instant minus = instant.minus(1, ChronoUnit.DAYS);
         instant.minus(Duration.ofDays(18));
         Instant plus = instant.plus(1, ChronoUnit.DAYS);
+        Instant with = instant.with(temporal -> temporal.with(ChronoField.INSTANT_SECONDS, 60 * 60));
 
         // 对比（时间是用秒和毫秒存储，谁的值小谁就越早，反之越晚）
         boolean after = instant.isAfter(minus); // true
@@ -247,10 +248,39 @@ public class TimeUsage {
         boolean supported = instant.isSupported(ChronoUnit.FOREVER); // false
         boolean supported1 = instant.isSupported(ChronoField.DAY_OF_MONTH); // false
 
-
-
+        // 查询指定的时间对象
+        Integer nano = Instant.now().query(temporal -> temporal.get(ChronoField.NANO_OF_SECOND));
+        Integer milli = Instant.now().query(temporal -> temporal.get(ChronoField.MILLI_OF_SECOND));
+        ZoneId query = ZonedDateTime.now(ZoneId.of("Asia/Shanghai")).query(TemporalQueries.zoneId());
+        Integer year = Year.now().query(temporal -> temporal.get(ChronoField.YEAR));
     }
 
+    public static void main(String[] args) {
+        localDateTime();
+        instant();
+    }
+
+    public static void localDateTime() {
+        LocalTime localTime = LocalTime.now();
+    }
+
+    public static void zonedDateTime() {
+        // 创建实例
+        ZonedDateTime zonedDateTime = ZonedDateTime.now();
+        ZonedDateTime.now(ZoneId.systemDefault());
+        ZonedDateTime.from(OffsetDateTime.now());
+        ZonedDateTime.ofInstant(Instant.now(), ZoneId.systemDefault());
+        ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault());
+        ZonedDateTime.ofStrict(LocalDateTime.now(), ZoneOffset.ofHours(8), ZoneId.of("Asia/Shanghai")); // 偏移量和时区不匹配会抛错
+        ZonedDateTime.parse("2023-04-14T08:22:28.987+08:00");
+
+        //
+    }
+
+
+    public static void offsetDateTime() {
+
+    }
 
     public static void calc() {
         // 生成时间 以及对比时区不同所产生的时间差距
