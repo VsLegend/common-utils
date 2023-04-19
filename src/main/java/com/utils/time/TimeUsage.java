@@ -153,6 +153,10 @@ public class TimeUsage {
         System.out.println("当前地区时间：" + instant.atZone(zoneId).toLocalDateTime());
         System.out.println("偏移量的本地时间计算：" + instant.atOffset(zoneOffset).toLocalDateTime());
 
+        TimeZone timeZone = TimeZone.getTimeZone("GMT+12:24");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        dateFormat.setTimeZone(timeZone);
+        System.out.println(dateFormat.format(new Date()));
     }
 
 
@@ -226,6 +230,7 @@ public class TimeUsage {
     private static void instant() {
         long timeMillis = System.currentTimeMillis();
         Instant instant = Instant.now();
+        Instant now = Instant.now(Clock.systemUTC());
         Instant ofEpochMilli = Instant.ofEpochMilli(timeMillis);
         Instant parse = Instant.parse("2023-04-14T08:22:28.987Z");
 
@@ -238,7 +243,7 @@ public class TimeUsage {
         Instant minus = instant.minus(1, ChronoUnit.DAYS);
         instant.minus(Duration.ofDays(18));
         Instant plus = instant.plus(1, ChronoUnit.DAYS);
-        Instant with = instant.with(temporal -> temporal.with(ChronoField.INSTANT_SECONDS, 60 * 60));
+        Instant adjustInto = ChronoField.INSTANT_SECONDS.adjustInto(instant, instant.getEpochSecond() + 60 * 60 * 24);
 
         // 对比（时间是用秒和毫秒存储，谁的值小谁就越早，反之越晚）
         boolean after = instant.isAfter(minus); // true
@@ -252,16 +257,32 @@ public class TimeUsage {
         Integer nano = Instant.now().query(temporal -> temporal.get(ChronoField.NANO_OF_SECOND));
         Integer milli = Instant.now().query(temporal -> temporal.get(ChronoField.MILLI_OF_SECOND));
         ZoneId query = ZonedDateTime.now(ZoneId.of("Asia/Shanghai")).query(TemporalQueries.zoneId());
+        LocalDate localDate = ZonedDateTime.now(ZoneId.of("Asia/Shanghai")).query(TemporalQueries.localDate());
+
         Integer year = Year.now().query(temporal -> temporal.get(ChronoField.YEAR));
     }
 
-    public static void main(String[] args) {
-        localDateTime();
-        instant();
-    }
-
     public static void localDateTime() {
-        LocalTime localTime = LocalTime.now();
+        // 实例
+        LocalTime localTime = LocalTime.parse("13:45:30.123456789");
+        LocalDate localDate = LocalDate.parse("2023-04-19");
+        LocalDateTime localDateTime = LocalDateTime.parse("2023-04-19T13:45:30.123456789");
+
+        // 转换
+        LocalDateTime of = LocalDateTime.of(localDate, localTime);
+        localDate.atTime(localTime);
+        localTime.atDate(localDate);
+        of.toLocalDate();
+        of.toLocalTime();
+        // 时间调整
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime adjustInto = (LocalDateTime) LocalTime.MAX.adjustInto(now);
+        Temporal temporal = ZoneOffset.UTC.adjustInto(now);
+
+        LocalDateTime withLocal = now.withYear(2022).withMonth(12).withDayOfMonth(23).withHour(10).withMinute(55).withSecond(12).withNano(123456);
+
+
+        System.out.println(adjustInto);
     }
 
     public static void zonedDateTime() {
@@ -276,9 +297,20 @@ public class TimeUsage {
 
         //
     }
+    public static void main(String[] args) {
+        offsetDateTime();
+    }
 
 
     public static void offsetDateTime() {
+        OffsetDateTime offsetDateTime = OffsetDateTime.now();
+        OffsetTime now = OffsetTime.now();
+        OffsetTime offsetTime = offsetDateTime.toOffsetTime();
+
+        LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("Asia/Shanghai"));
+        ZoneOffset zoneOffset = ZoneOffset.ofHours(8);
+
+        OffsetDateTime of = OffsetDateTime.of(localDateTime, zoneOffset);
 
     }
 
