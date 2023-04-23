@@ -90,6 +90,10 @@ public class TimeUsage {
         System.out.println(ZonedDateTime.now(zoneUt));
         System.out.println(ZonedDateTime.now(ctt));
 
+        Instant parse = Instant.parse("1986-06-01T00:00:00.000Z");
+        LocalDateTime localDateTime = LocalDateTime.ofInstant(parse, ctt);
+        ZoneOffset offset = ctt.getRules().getOffset(parse);
+
         // ZoneId可用的时区ID
         Set<String> availableZoneIds = ZoneId.getAvailableZoneIds();
 //        availableZoneIds.forEach(System.out::println);
@@ -159,7 +163,6 @@ public class TimeUsage {
         System.out.println(dateFormat.format(new Date()));
     }
 
-
     private static void chrUnit() {
         // 时间单位 TimeUnit/1.8前 ChronoUnit/1.8
         Instant instant = Instant.now();
@@ -172,6 +175,33 @@ public class TimeUsage {
         ChronoUnit weeks = ChronoUnit.WEEKS;
         System.out.println("相差周数：" + weeks.between(LocalDate.parse("2023-04-07"), LocalDate.parse("2023-04-14")));
         System.out.println("相差周数：" + weeks.between(LocalDate.parse("2023-04-08"), LocalDate.parse("2023-04-14")));
+
+        LocalDate localDate = LocalDate.parse("2023-03-21");
+        System.out.println(localDate.isSupported(ChronoUnit.DAYS) && localDate.isSupported(ChronoUnit.MONTHS) && localDate.isSupported(ChronoUnit.YEARS));
+        System.out.println(localDate.plus(10, ChronoUnit.DAYS));
+        System.out.println(localDate.minus(1, ChronoUnit.MONTHS));
+        System.out.println(localDate.until(localDate.minus(10, ChronoUnit.YEARS), ChronoUnit.YEARS));
+
+    }
+
+
+    private static void chronoField() {
+        System.out.println(ChronoField.AMPM_OF_DAY.getFrom(LocalDateTime.now()));
+
+        LocalDateTime now = LocalDateTime.now(); // 2023-04-21T18:34:57.537
+        System.out.println(now.isSupported(ChronoField.AMPM_OF_DAY) && now.isSupported(ChronoField.DAY_OF_MONTH));
+        // 0代表上午 1代表下午
+        System.out.println(now.get(ChronoField.AMPM_OF_DAY)); // 1
+        System.out.println(now.getLong(ChronoField.MILLI_OF_SECOND)); // 537
+        System.out.println(now.range(ChronoField.DAY_OF_MONTH)); // 1-30
+
+        System.out.println(now.get(ChronoField.SECOND_OF_MINUTE));
+        System.out.println(now.get(ChronoField.MINUTE_OF_HOUR));
+        System.out.println(now.get(ChronoField.HOUR_OF_DAY));
+
+        System.out.println(now.get(ChronoField.MONTH_OF_YEAR));
+        System.out.println(now.get(ChronoField.DAY_OF_MONTH));
+        System.out.println(now.get(ChronoField.DAY_OF_WEEK));
     }
 
     /**
@@ -179,9 +209,9 @@ public class TimeUsage {
      */
     private static void duration() {
         // 代表某个时间的具体长度
-        Instant calcInstant = Instant.now();
+        Instant now = Instant.now();
         Duration days = Duration.ofDays(1);
-        System.out.printf("时间加减：%s，增加后：%s，减少后：%s \n", calcInstant, days.addTo(calcInstant), days.subtractFrom(calcInstant));
+        System.out.printf("时间加减：%s，增加后：%s，减少后：%s \n", now, days.addTo(now), days.subtractFrom(now));
         System.out.printf("时间长度：%s，增加后：%s，倍数计算：%s \n", days, days.plus(Duration.ofHours(6)), days.multipliedBy(10));
 
         Duration duration = ChronoUnit.HOURS.getDuration();
@@ -189,9 +219,13 @@ public class TimeUsage {
         System.out.println(duration.toString());
         System.out.println(days.get(ChronoUnit.SECONDS));
 
+        Duration plus = Duration.ofDays(10).plus(Duration.ofHours(10)).plus(Duration.ofMinutes(10));
+        System.out.println(plus);
+        System.out.println(now.plus(plus));
+
         // 时间段
         ChronoField hourOfDay = ChronoField.HOUR_OF_DAY;
-        LocalDateTime now = LocalDateTime.now();
+
     }
 
 
@@ -223,6 +257,7 @@ public class TimeUsage {
         LockSupport.parkNanos(1);
         System.out.println(clock.instant());
     }
+
 
     /**
      * Instant（时间实例，静态时间）
@@ -277,15 +312,20 @@ public class TimeUsage {
         // 时间调整
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime adjustInto = (LocalDateTime) LocalTime.MAX.adjustInto(now);
+        LocalDateTime adjustInto1 = (LocalDateTime) Year.of(2025).adjustInto(now);
         Temporal temporal = ZoneOffset.UTC.adjustInto(now);
 
+        int year = now.getYear();
+        int monthValue = now.getMonthValue();
+        Month month = now.getMonth();
+        DayOfWeek dayOfWeek = now.getDayOfWeek();
+        int dayOfMonth = now.getDayOfMonth();
         LocalDateTime withLocal = now.withYear(2022).withMonth(12).withDayOfMonth(23).withHour(10).withMinute(55).withSecond(12).withNano(123456);
-
-
-        System.out.println(adjustInto);
+        LocalDateTime plusAndMinus = now.plusYears(1).plusMonths(12).plusWeeks(1).minusDays(40).minusHours(1).minusMinutes(1).plusSeconds(120).plusNanos(10);
     }
 
     public static void zonedDateTime() {
+        ZoneId from = ZoneId.from(OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.ofHoursMinutes(8, 12)));
         // 创建实例
         ZonedDateTime zonedDateTime = ZonedDateTime.now();
         ZonedDateTime.now(ZoneId.systemDefault());
@@ -295,12 +335,7 @@ public class TimeUsage {
         ZonedDateTime.ofStrict(LocalDateTime.now(), ZoneOffset.ofHours(8), ZoneId.of("Asia/Shanghai")); // 偏移量和时区不匹配会抛错
         ZonedDateTime.parse("2023-04-14T08:22:28.987+08:00");
 
-        //
     }
-    public static void main(String[] args) {
-        offsetDateTime();
-    }
-
 
     public static void offsetDateTime() {
         OffsetDateTime offsetDateTime = OffsetDateTime.now();
@@ -312,6 +347,17 @@ public class TimeUsage {
 
         OffsetDateTime of = OffsetDateTime.of(localDateTime, zoneOffset);
 
+        // 调整偏移量
+        System.out.println(of);
+        System.out.println(of.withOffsetSameLocal(ZoneOffset.ofHours(-5)));
+
+        // 调整偏移量时同时调整该偏移量的时间
+        System.out.println(of.withOffsetSameInstant(ZoneOffset.ofHours(8)));
+        System.out.println(of.withOffsetSameInstant(ZoneOffset.ofHours(-5)));
+    }
+
+    public static void main(String[] args) {
+        offsetDateTime();
     }
 
     public static void calc() {
