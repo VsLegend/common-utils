@@ -228,6 +228,9 @@ public class TimeUsage {
 
     }
 
+    public static void main(String[] args) {
+        clock();
+    }
 
     /**
      * 时钟类（动态时间）
@@ -235,19 +238,17 @@ public class TimeUsage {
     private static void clock() {
         // 本地系统时钟 SystemClock
         Clock defaultClock = Clock.systemDefaultZone();
-        print(defaultClock);
 
         // 静态时钟 FixedClock
         Clock fixedClock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
-        print(fixedClock);
 
         // 偏移量时钟 OffsetClock
         Clock offset = Clock.offset(defaultClock, Duration.ofDays(1));
-        print(offset);
 
         // 闹钟，根据当前时间计算Duration后的未来时钟 TickClock
-        Clock tick = Clock.tick(defaultClock, Duration.ofSeconds(1));
-        print(tick);
+        Clock tick = Clock.tick(defaultClock, Duration.ofMinutes(10));
+        System.out.println(LocalDateTime.ofInstant(defaultClock.instant(), ZoneId.systemDefault()));
+        System.out.println(LocalDateTime.ofInstant(tick.instant(), ZoneId.systemDefault()));
     }
 
     private static void print(Clock clock) {
@@ -356,9 +357,6 @@ public class TimeUsage {
         System.out.println(of.withOffsetSameInstant(ZoneOffset.ofHours(-5)));
     }
 
-    public static void main(String[] args) {
-        offsetDateTime();
-    }
 
     public static void calc() {
         // 生成时间 以及对比时区不同所产生的时间差距
