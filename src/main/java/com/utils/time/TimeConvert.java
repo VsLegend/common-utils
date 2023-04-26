@@ -117,19 +117,19 @@ public class TimeConvert {
 
     public static void localDateTime() {
         LocalDateTime localDateTime = LocalDateTime.now();
-        ZoneOffset utc = ZoneOffset.UTC;
+        ZoneOffset zoneOffset = ZoneOffset.ofHours(8);
         // 通过实例对象转换
-        Instant instant = localDateTime.toInstant(utc);
+        Instant instant = localDateTime.toInstant(zoneOffset);
         LocalDate localDate = localDateTime.toLocalDate();
         LocalTime localTime = localDateTime.toLocalTime();
-        ZonedDateTime zonedDateTime = localDateTime.atZone(ZoneId.of("UTC"));
-        OffsetDateTime offsetDateTime = localDateTime.atOffset(utc);
+        ZonedDateTime zonedDateTime = localDateTime.atZone(zoneOffset);
+        OffsetDateTime offsetDateTime = localDateTime.atOffset(zoneOffset);
         // 通过构造方法转换
-        Instant.ofEpochSecond(localDateTime.toEpochSecond(utc));
+        Instant.ofEpochSecond(localDateTime.toEpochSecond(zoneOffset));
         LocalDate.from(localDateTime);
         LocalTime.from(localDateTime);
-        OffsetDateTime.of(localDateTime, utc);
-        ZonedDateTime.of(localDateTime, utc);
+        OffsetDateTime.of(localDateTime, zoneOffset);
+        ZonedDateTime.of(localDateTime, zoneOffset);
     }
 
     public static void offsetDateTime() {
