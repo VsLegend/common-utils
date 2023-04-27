@@ -4,6 +4,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -15,6 +16,11 @@ import java.util.TimeZone;
 public class TimeConvert {
 
     public static void main(String[] args) throws ParseException {
+        long d1 = ChronoUnit.DAYS.between(LocalDateTime.now(), ZonedDateTime.now());
+        long d2 = ChronoUnit.DAYS.between(OffsetDateTime.now(), ZonedDateTime.now());
+        long d3 = ChronoUnit.DAYS.between(ZonedDateTime.now(), OffsetDateTime.now());
+        long d4 = ChronoUnit.DAYS.between(ZonedDateTime.now(), LocalDateTime.now());
+
         zonedDateTime();
     }
 

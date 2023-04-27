@@ -229,7 +229,10 @@ public class TimeUsage {
     }
 
     public static void main(String[] args) {
-        clock();
+        Clock clock = Clock.systemDefaultZone();
+        Clock tick = Clock.tick(clock, Duration.ofHours(1).plusMinutes(30));
+        System.out.println(LocalDateTime.ofInstant(clock.instant(), ZoneId.systemDefault()));
+        System.out.println(LocalDateTime.ofInstant(tick.instant(), ZoneId.systemDefault()));
     }
 
     /**
