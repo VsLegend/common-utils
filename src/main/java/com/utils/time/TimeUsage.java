@@ -229,10 +229,12 @@ public class TimeUsage {
     }
 
     public static void main(String[] args) {
-        Clock clock = Clock.systemDefaultZone();
-        Clock tick = Clock.tick(clock, Duration.ofHours(1).plusMinutes(30));
-        System.out.println(LocalDateTime.ofInstant(clock.instant(), ZoneId.systemDefault()));
-        System.out.println(LocalDateTime.ofInstant(tick.instant(), ZoneId.systemDefault()));
+        Clock clock = Clock.fixed(Instant.parse("2023-05-04T01:20:20Z"), ZoneId.systemDefault());
+        Clock tick = Clock.tick(clock, Duration.ofMinutes(61));
+        Clock.tickMinutes(ZoneId.systemDefault());
+        Clock.tickSeconds(ZoneId.systemDefault());
+        System.out.println(clock.instant());
+        System.out.println(tick.instant());
     }
 
     /**
@@ -240,18 +242,20 @@ public class TimeUsage {
      */
     private static void clock() {
         // 本地系统时钟 SystemClock
-        Clock defaultClock = Clock.systemDefaultZone();
+        Clock systemClock = Clock.systemDefaultZone();
 
         // 静态时钟 FixedClock
         Clock fixedClock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
 
         // 偏移量时钟 OffsetClock
-        Clock offset = Clock.offset(defaultClock, Duration.ofDays(1));
+        Clock offset = Clock.offset(systemClock, Duration.ofDays(1));
 
         // 闹钟，根据当前时间计算Duration后的未来时钟 TickClock
-        Clock tick = Clock.tick(defaultClock, Duration.ofMinutes(10));
-        System.out.println(LocalDateTime.ofInstant(defaultClock.instant(), ZoneId.systemDefault()));
+        Clock tick = Clock.tick(systemClock, Duration.ofMinutes(10));
+        System.out.println(LocalDateTime.ofInstant(systemClock.instant(), ZoneId.systemDefault()));
         System.out.println(LocalDateTime.ofInstant(tick.instant(), ZoneId.systemDefault()));
+
+        systemClock.instant();
     }
 
     private static void print(Clock clock) {
