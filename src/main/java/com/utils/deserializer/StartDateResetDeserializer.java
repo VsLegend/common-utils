@@ -1,4 +1,4 @@
-package com.utils.serializer.deserializer;
+package com.utils.deserializer;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -14,20 +14,20 @@ import java.util.Date;
 /**
  * @Author Wang Junwei
  * @Date 2022/8/25 15:31
- * @Description 将查询时间的结束时间设置为：当天的最后一刻
+ * @Description 查询的开始时间兼容格式
  */
-public class EndDateResetDeserializer extends StdDeserializer<Date> {
+public class StartDateResetDeserializer extends StdDeserializer<Date> {
 
     private static final SimpleDateFormat FORMATTER1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     private static final SimpleDateFormat FORMATTER2 = new SimpleDateFormat("yyyy-MM-dd");
 
-    EndDateResetDeserializer() {
+    StartDateResetDeserializer() {
         this(null);
     }
 
 
-    EndDateResetDeserializer(Class<Date> deserializer) {
+    StartDateResetDeserializer(Class<Date> deserializer) {
         super(deserializer);
     }
 
@@ -48,9 +48,6 @@ public class EndDateResetDeserializer extends StdDeserializer<Date> {
                 throw new IllegalArgumentException("Illegal date format");
             }
         }
-        if (null == date) {
-            return null;
-        }
-        return new Date(date.getTime() + 1000 * 60 * 60 * 24L - 1L);
+        return date;
     }
 }
